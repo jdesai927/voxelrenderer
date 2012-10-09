@@ -17,6 +17,18 @@ vec3* WriteBMP::getVec(string reader) {
 	return ret;
 }
 
+vec3* WriteBMP::getTaglessVec(string reader) {
+	istringstream myStream = static_cast<istringstream>(reader);
+	int i = 0;
+	float temp;
+	vec3* ret = new vec3(0.0f, 0.0f, 0.0f);
+	while (myStream >> temp) {
+		(*ret)[i] = temp;
+		i++;
+	}
+	return ret;
+}
+
 vector<int>* WriteBMP::getInts(string reader) {
 	istringstream myStream = getNumStream(reader);
 	int temp;
@@ -42,12 +54,12 @@ vec3* WriteBMP::rayMarch(vec3* rayInit, vec3 rayDirect, float k) {
 }
 
 int WriteBMP::getVoxelIndex(vec3* rayPos) {
-	if (rayPos->x < origin->x || rayPos->y < origin->y || rayPos->z > origin->z
-		|| rayPos->x > *voxSize * *numVoxX + origin->x || rayPos->y > *voxSize * *numVoxY + origin->y 
-		|| rayPos->z < -1 * *numVoxZ * *voxSize + origin->z) {
+	if (rayPos->x <= origin->x || rayPos->y <= origin->y || rayPos->z >= origin->z
+		|| rayPos->x >= *voxSize * *numVoxX + origin->x || rayPos->y >= *voxSize * *numVoxY + origin->y 
+		|| rayPos->z <= -1 * *numVoxZ * *voxSize + origin->z) {
 			return -1;
 	}
-	return floorf(rayPos->x - origin->x) + (*numVoxX * (floorf(rayPos->y - origin->y))) + (*numVoxX * *numVoxY * floorf(-1.0f * rayPos->z - origin->z));
+	return floorf(rayPos->x - origin->x) + (*numVoxX * (floorf(rayPos->y - origin->y))) + (*numVoxX * *numVoxY * floorf(-1.0f * (rayPos->z - origin->z)));
 }
 
 void WriteBMP::rayIncr(vec3* colorVec, vec3* rayPos, vec3 rayToIncr, float* T, float k, float rayLength) {

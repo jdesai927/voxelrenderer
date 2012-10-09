@@ -60,16 +60,26 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="cloud.cpp" />
     <ClCompile Include="EasyBMP.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="perlin.cpp" />
+    <ClCompile Include="primitive.cpp" />
+    <ClCompile Include="pyroclastic.cpp" />
+    <ClCompile Include="sphere.cpp" />
     <ClCompile Include="voxel.cpp" />
     <ClCompile Include="WriteBMP.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\EasyBMP_1.06\EasyBMP.h" />
+    <ClInclude Include="cloud.h" />
     <ClInclude Include="EasyBMP_BMP.h" />
     <ClInclude Include="EasyBMP_DataStructures.h" />
     <ClInclude Include="EasyBMP_VariousBMPutilities.h" />
+    <ClInclude Include="perlin.h" />
+    <ClInclude Include="primitive.h" />
+    <ClInclude Include="pyroclastic.h" />
+    <ClInclude Include="sphere.h" />
     <ClInclude Include="voxel.h" />
     <ClInclude Include="WriteBMP.h" />
   </ItemGroup>

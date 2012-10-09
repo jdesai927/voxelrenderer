@@ -40,9 +40,11 @@ public:
 	static bool* entered;
 	static float* lightDens;
 	static vec3* origin;
+	static vec3* center;
 	//static bool* lightIn;
 
 	static istringstream getNumStream(string);
+	static vec3* getTaglessVec(string);
 	static vec3* getVec(string);
 	static vector<int>* getInts(string);
 	static vec3 mapPoint(float, float, vec3, vec3, vec3);

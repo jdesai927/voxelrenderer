@@ -6,8 +6,12 @@
  * University of Pennsylvania, Fall 2011
  **/
 
-#include "WriteBMP.h"
+#include "perlin.h"
+#include "sphere.h"
+#include "cloud.h"
+#include "pyroclastic.h"
 
+vec3* WriteBMP::center = 0;
 bool* WriteBMP::entered = new bool(false);
 vec3* WriteBMP::eye = 0;
 vec3* WriteBMP::camDirection = 0;
@@ -111,8 +115,69 @@ int main(int argc, char** argv) {
 
 	WriteBMP::allVoxels = new Voxel[(*WriteBMP::numVoxX * *WriteBMP::numVoxY * *WriteBMP::numVoxZ)];
 	Voxel* vox;
-	float tempDens;
-	int voxInd = 0;
+	float radius;
+	vec3* currentPoint;
+	float pointDist;
+	float initX = WriteBMP::origin->x;// - *WriteBMP::numVoxX * *WriteBMP::voxSize;
+	float endX = WriteBMP::origin->x + *WriteBMP::numVoxX * *WriteBMP::voxSize;
+	float initY = WriteBMP::origin->y;// - *WriteBMP::numVoxY * *WriteBMP::voxSize;
+	float endY = WriteBMP::origin->y + *WriteBMP::numVoxY * *WriteBMP::voxSize;
+	float initZ = WriteBMP::origin->z;// - *WriteBMP::numVoxZ * *WriteBMP::voxSize;
+	float endZ = WriteBMP::origin->z - *WriteBMP::numVoxZ * *WriteBMP::voxSize;
+	int voxInd;
+	int mode;
+	
+	int maxCheck;
+	getline(config, reader);
+	getline(config, reader);
+	static_cast<istringstream>(reader) >> maxCheck;
+	Primitive** primArr = new Primitive*[maxCheck];
+	float* densAdd;
+	int pr = 0;
+
+	while (getline(config, reader)) {
+		getline(config, reader);
+		if (reader == "sphere") {
+			mode = 0;
+		} else if (reader == "cloud") {
+			mode = 1;
+		} else if (reader == "pyroclastic") {
+			mode = 2;
+		}
+		getline(config, reader);
+		WriteBMP::center = WriteBMP::getTaglessVec(reader);
+		WriteBMP::center->z *= -1;
+		getline(config, reader);
+		static_cast<istringstream>(reader) >> radius;
+		if (mode == 0) {
+			primArr[pr] = new Sphere(0, 0, 0, 0, radius, *WriteBMP::center);
+		} else if (mode == 1) {
+			primArr[pr] = new Cloud(8, 0.03f, 6.0f, 6, radius, *WriteBMP::center);
+		} else if (mode == 2) {
+			primArr[pr] = new Pyroclastic(8, 0.015f, 3.0f, 21, radius, *WriteBMP::center);
+		}
+		pr++;
+	}
+
+	for (float x = initX; x < endX; x+=*WriteBMP::voxSize) {
+			for (float y = initY; y < endY; y+=*WriteBMP::voxSize) {
+				for (float z = initZ; z > endZ; z-=*WriteBMP::voxSize) {
+					currentPoint = new vec3(x, y, z);
+					voxInd = floorf(x - WriteBMP::origin->x) + (*WriteBMP::numVoxX * (floorf(y - WriteBMP::origin->y))) + (*WriteBMP::numVoxX * *WriteBMP::numVoxY * floorf(-1.0f * (z - WriteBMP::origin->z)));
+					vox = new Voxel();
+					for (int i = 0; i < maxCheck; i++) {
+						densAdd = primArr[i]->getDensity(currentPoint);
+						*vox->density += *densAdd;
+						delete densAdd;
+						*vox->density = clamp(*vox->density, 0.0f, 1.0f);
+					}
+					WriteBMP::allVoxels[voxInd] = *vox;
+					delete currentPoint;
+				}
+			}
+		}
+
+	/*
 	while (getline(config, reader)) {
 		static_cast<istringstream>(reader) >> tempDens;
 		vox = new Voxel();
@@ -121,6 +186,7 @@ int main(int argc, char** argv) {
 		//delete vox;
 		voxInd++;
 	}
+	*/
 
 	unsigned int width = static_cast<int>(*WriteBMP::resoX);
 	unsigned int height = static_cast<int>(*WriteBMP::resoY);

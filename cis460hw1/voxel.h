@@ -4,6 +4,7 @@ class Voxel {
 
 public:
 	float* lightVal;
+	float* lightVal2;
 	float* density;
 	Voxel();
 	Voxel(float rho, float light);

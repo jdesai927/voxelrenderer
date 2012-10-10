@@ -8,14 +8,20 @@
 
 #include "perlin.h"
 #include "sphere.h"
+#include "boxfilter.h"
 #include "cloud.h"
 #include "pyroclastic.h"
+#include "cube.h"
+#include "cylinder.h"
 
+vec3* WriteBMP::lightPos2 = 0;
+vec3* WriteBMP::lightCol2 = 0;
 vec3* WriteBMP::center = 0;
 bool* WriteBMP::entered = new bool(false);
 vec3* WriteBMP::eye = 0;
 vec3* WriteBMP::camDirection = 0;
 vec3* WriteBMP::upVec = 0;
+float* WriteBMP::Q2 = new float(1.0f);
 vec3* WriteBMP::finalColor = 0;
 vec3* WriteBMP::bgColor = 0;
 vec3* WriteBMP::matColor = 0;
@@ -102,6 +108,12 @@ int main(int argc, char** argv) {
 	getline(config, reader);
 	WriteBMP::lightCol = WriteBMP::getVec(reader);
 
+	getline(config, reader);
+	WriteBMP::lightPos2 = WriteBMP::getVec(reader);
+
+	getline(config, reader);
+	WriteBMP::lightCol2 = WriteBMP::getVec(reader);
+
 	vec3 A = cross(*WriteBMP::camDirection, *WriteBMP::upVec);
 	vec3 B = cross(A, *WriteBMP::camDirection);
 	vec3 M = *WriteBMP::camDirection + *WriteBMP::eye;
@@ -143,6 +155,12 @@ int main(int argc, char** argv) {
 			mode = 1;
 		} else if (reader == "pyroclastic") {
 			mode = 2;
+		} else if (reader == "cube") {
+			mode = 3;
+		} else if (reader == "cylinder") {
+			mode = 4;
+		} else if (reader == "boxfilter") {
+			mode = 5;
 		}
 		getline(config, reader);
 		WriteBMP::center = WriteBMP::getTaglessVec(reader);
@@ -154,7 +172,13 @@ int main(int argc, char** argv) {
 		} else if (mode == 1) {
 			primArr[pr] = new Cloud(8, 0.03f, 6.0f, 6, radius, *WriteBMP::center);
 		} else if (mode == 2) {
-			primArr[pr] = new Pyroclastic(8, 0.015f, 3.0f, 21, radius, *WriteBMP::center);
+			primArr[pr] = new Pyroclastic(8, 0.015f, 3.0f, -11, radius, *WriteBMP::center);
+		} else if (mode == 3) {
+			primArr[pr] = new Cube(8, 0.03f, 2.0f, 6, radius, *WriteBMP::center);
+		} else if (mode == 4) {
+			primArr[pr] = new Cylinder(8, 0.03f, 2.0f, 6, radius, *WriteBMP::center);
+		} else if (mode == 5) {
+			primArr[pr] = new Boxfilter(8, 0.03f, 2.0f, -12, radius);
 		}
 		pr++;
 	}
@@ -176,6 +200,26 @@ int main(int argc, char** argv) {
 				}
 			}
 		}
+
+	if (mode == 5) {
+		float* fl;
+		Boxfilter bx(0, 0, 0, 0, radius);
+		Voxel voxl;
+		for (float x = initX; x < endX; x+=*WriteBMP::voxSize) {
+			for (float y = initY; y < endY; y+=*WriteBMP::voxSize) {
+				for (float z = initZ; z > endZ; z-=*WriteBMP::voxSize) {
+					currentPoint = new vec3(x, y, z);
+					voxInd = floorf(x - WriteBMP::origin->x) + (*WriteBMP::numVoxX * (floorf(y - WriteBMP::origin->y))) + (*WriteBMP::numVoxX * *WriteBMP::numVoxY * floorf(-1.0f * (z - WriteBMP::origin->z)));
+					fl = bx.splatPixel(currentPoint);
+					voxl = WriteBMP::allVoxels[voxInd];
+					*voxl.density += *fl;
+					*voxl.density = clamp(*voxl.density, 0.0f, 1.0f);
+					delete fl;
+					delete currentPoint;
+				}
+			}
+		}
+	}
 
 	/*
 	while (getline(config, reader)) {

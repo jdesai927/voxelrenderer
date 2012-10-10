@@ -64,6 +64,7 @@ int WriteBMP::getVoxelIndex(vec3* rayPos) {
 
 void WriteBMP::rayIncr(vec3* colorVec, vec3* rayPos, vec3 rayToIncr, float* T, float k, float rayLength) {
 	*Q = 1.0f;
+	*Q2 = 1.0f;
 	int ind = WriteBMP::getVoxelIndex(rayPos);
 	if (ind == -1) {
 		if (*entered || length(*eye - *rayPos) > rayLength) {
@@ -75,25 +76,42 @@ void WriteBMP::rayIncr(vec3* colorVec, vec3* rayPos, vec3 rayToIncr, float* T, f
 		*entered = true;
 		Voxel vox = allVoxels[ind];
 		*dens = *vox.density;
+		vec3 lidir;
+		vec3* ldir;
 		if (*vox.lightVal == -1 && *dens != 0.0f) {
 			lrPos->x = lightPos->x;
 			lrPos->y = lightPos->y;
 			lrPos->z = lightPos->z;
-			vec3 lidir = normalize(*rayPos - *lightPos);
-			vec3* ldir = new vec3(lidir.x, lidir.y, lidir.z);
+			lidir = normalize(*rayPos - *lightPos);
+			ldir = new vec3(lidir.x, lidir.y, lidir.z);
 			*ldir *= *stepSize;
-			lightMarch(lrPos, ldir, Q, length(*lightPos - *rayPos), 0.5f);
+			lightMarch(lightPos, lrPos, ldir, Q, length(*lightPos - *rayPos), 0.5f);
 			*vox.lightVal = *Q;
 		} else {
 			*Q = *vox.lightVal;
 		}
+		if (*vox.lightVal2 == -1 && *dens != 0.0f) {
+			lidir = normalize(*rayPos - *lightPos2);
+			ldir = new vec3(lidir.x, lidir.y, lidir.z);
+			*ldir *= *stepSize;
+			
+			lrPos->x = lightPos2->x;
+			lrPos->y = lightPos2->y;
+			lrPos->z = lightPos2->z;
+			
+			lightMarch(lightPos2, lrPos, ldir, Q2, length(*lightPos2 - *rayPos), 0.5f);
+			*vox.lightVal2 = *Q2;
+		} else {
+			*Q2 = *vox.lightVal2;
+		}
 	}
 	vec3 col(lightCol->x * matColor->x, lightCol->y * matColor->y, lightCol->z * matColor->z);
-	
+	vec3 col2(lightCol2->x * matColor->x, lightCol2->y * matColor->y, lightCol2->z * matColor->z);
 	float dT = exp(-1.0f * k * *stepSize * *dens);
 	*T *= dT;
 	*rayPos += rayToIncr;
 	*colorVec += ((1 - dT)/k) * *T * col * *Q;
+	*colorVec += ((1 - dT)/k) * *T * col2 * *Q2;
 	*colorVec = clamp(*colorVec, 0.0f, 1.0f);
 	if (*T < 0.01) {
 		*colorVec += *T * *bgColor;
@@ -102,7 +120,7 @@ void WriteBMP::rayIncr(vec3* colorVec, vec3* rayPos, vec3 rayToIncr, float* T, f
 	rayIncr(colorVec, rayPos, rayToIncr, T, k, rayLength);
 }
 
-void WriteBMP::lightMarch(vec3* currentRay, vec3* incr, float* T, float len, float k) {
+void WriteBMP::lightMarch(vec3* posRef, vec3* currentRay, vec3* incr, float* T, float len, float k) {
 	int ind = WriteBMP::getVoxelIndex(currentRay);
 	if (ind == -1) {
 		*lightDens = 0.0f;
@@ -112,10 +130,10 @@ void WriteBMP::lightMarch(vec3* currentRay, vec3* incr, float* T, float len, flo
 	}
 	*T *= exp(-1.0f * k * *stepSize * *lightDens);
 	*currentRay += *incr;
-	if (*T < 0.01 || length(*currentRay - *lightPos) > len) {
+	if (*T < 0.01 || length(*currentRay - *posRef) > len) {
 		return;
 	}
-	lightMarch(currentRay, incr, T, len, k);
+	lightMarch(posRef, currentRay, incr, T, len, k);
 }
 
 bool WriteBMP::intersectsGrid(vec3 checkRay, vec3 posRay) {

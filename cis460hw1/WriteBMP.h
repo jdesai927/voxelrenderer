@@ -34,8 +34,11 @@ public:
 	static float* dens;
 	static vec3* lightCol;
 	static vec3* lightPos;
+	static vec3* lightCol2;
+	static vec3* lightPos2;
 	static vec3* lrPos;
 	static float* Q;
+	static float* Q2;
 	static vec3* finalLight;
 	static bool* entered;
 	static float* lightDens;
@@ -51,7 +54,7 @@ public:
 	static int getVoxelIndex(vec3* rayPos);
 	static vec3* rayMarch(vec3*, vec3, float);
 	static void rayIncr(vec3*, vec3*, vec3, float*, float, float);
-	static void lightMarch(vec3*,vec3*,float*,float,float);
+	static void lightMarch(vec3*,vec3*,vec3*,float*,float,float);
 	static bool intersectsGrid(vec3, vec3);
 
 };

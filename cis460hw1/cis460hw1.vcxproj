@@ -60,7 +60,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="boxfilter.cpp" />
     <ClCompile Include="cloud.cpp" />
+    <ClCompile Include="cube.cpp" />
+    <ClCompile Include="cylinder.cpp" />
     <ClCompile Include="EasyBMP.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="perlin.cpp" />
@@ -72,7 +75,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\EasyBMP_1.06\EasyBMP.h" />
+    <ClInclude Include="boxfilter.h" />
     <ClInclude Include="cloud.h" />
+    <ClInclude Include="cube.h" />
+    <ClInclude Include="cylinder.h" />
     <ClInclude Include="EasyBMP_BMP.h" />
     <ClInclude Include="EasyBMP_DataStructures.h" />
     <ClInclude Include="EasyBMP_VariousBMPutilities.h" />

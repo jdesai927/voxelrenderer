@@ -6,5 +6,9 @@ Cloud::Cloud(int oct, float freq, float amp, int seed, float rad, vec3 cen) : Pr
 }
 
 float* Cloud::getDensity(vec3* pos) {
-	return new float(per->Get(pos->x, pos->y, -1.0f * pos->z) + ((1.0f - length(*pos - *center))/ *radius));
+	float f = per->Get(pos->x, pos->y, -1.0f * pos->z) + ((1.0f - length(*pos - *center))/ *radius);
+	if (f < 0) {
+		return new float(0.0f);
+	}
+	return new float(f);
 }

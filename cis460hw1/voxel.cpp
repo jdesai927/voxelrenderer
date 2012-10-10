@@ -4,6 +4,7 @@ using namespace glm;
 
 Voxel::Voxel() {
 	lightVal = new float(-1.0f);
+	lightVal2 = new float(-1.0f);
 	density = new float(0.0f);
 }
 
